@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QDir>
 #include <QTextStream>
+#include <QHash>
 
 MainWindow::MainWindow()
 {
@@ -50,6 +51,7 @@ void MainWindow::open()
 	list->jsonFileChange(jsonPath.filesystemAbsolutePath());
 }
 
+// save currently saves to a csv file
 void MainWindow::save()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QDir::currentPath(), tr("csv (*.csv)"));
@@ -66,13 +68,47 @@ void MainWindow::save()
 	QJsonObject::const_iterator endIt = jsonObj.constEnd();
 
 
-	QTextStream out(&file);
-	// create list objects
+	//fun maping time
+	QHash<QString, QList<QString>> hashmap;
+
+	// we need to save time for pricing items by reducing redundant classnames
+	// we therefor map by modelname a list of classnames
+
 	for (iter; iter != endIt; iter++)
 	{
-		out << iter.key() << "\n";
-		
+		QString key = jsonObj[iter.key()].toObject()["model"].toString();
+		QHash<QString, QList<QString>>::const_iterator hashIt = hashmap.find(key);
+		if (hashIt == hashmap.end())
+		{
+			// create the QList if the key is new
+			QList<QString> classnames{ iter.key()};
+			hashmap[key] = classnames;
+		}
+		else
+		{
+			hashmap[key].push_back(iter.key());
+		}
+
 	}
+
+
+
+	QTextStream out(&file);
+	QHash<QString, QList<QString>>::const_iterator hashIt = hashmap.begin();
+	QHash<QString, QList<QString>>::const_iterator hashEndIT = hashmap.end();
+	for (hashIt ; hashIt != hashEndIT; hashIt++)
+	{
+		out << hashIt.key() << "\n";
+
+	}
+
+
+	// create list objects
+	//for (iter = jsonObj.constBegin(); iter != endIt; iter++)
+	//{
+		//out << iter.key() << "\n";
+		
+	//}
 	
 	file.close();
 }
