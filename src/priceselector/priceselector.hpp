@@ -14,6 +14,7 @@
 #include <QProgressBar>
 #include "../list/list.hpp"
 #include <QtWidgets>
+#include <QHash>
 
 
 class PriceSelector : public QWidget
@@ -40,7 +41,10 @@ private:
     QDir image_folder_path;
     QJsonObject::const_iterator iter;
     QJsonObject::const_iterator endIt;
+    QHash<QString, QList<QString>>::const_iterator hashIt;
+    QHash<QString, QList<QString>>::const_iterator hashEndIT;
     QJsonObject endObj;
+    QHash<QString, QList<QString>> hashmap;
 };
 
 

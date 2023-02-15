@@ -21,7 +21,6 @@ PriceSelector::PriceSelector(QJsonObject json, QDir folderPath, QWidget* parent)
 
 	//progress bar
 	proBar->setMinimum(0);
-	proBar->setMaximum(jsonObj.size());
 
 
 	layout->addWidget(imageLabel, 0, 0);
@@ -54,12 +53,13 @@ bool PriceSelector::load_image(const QString& pathToImage)
 void PriceSelector::buttonPushed()
 {
 	int value = proBar->value();
-	endObj[iter.key()] =  edit->text().toInt();
+	//endObj[iter.key()] =  edit->text().toInt();
 	proBar->setValue(value++);
-	if (iter != endIt) {
-		iter++;
-		classnameLabel->setText(iter.key());
-		QDir imageFilePath{ image_folder_path.absolutePath().append("/").append(iter.key().append(".png")) };
+	if (hashIt != hashEndIT) {
+		hashIt++;
+		QString key = hashmap[hashIt.key()][0];
+		classnameLabel->setText(key);
+		QDir imageFilePath{ image_folder_path.absolutePath().append("/").append(key.append(".png")) };
 		//std::cout << imageFilePath.absolutePath().toStdString() <<"\n";
 		load_image(imageFilePath.absolutePath());
 	}
@@ -96,9 +96,36 @@ void PriceSelector::process_list()
 	iter = jsonObj.constBegin();
 	endIt = jsonObj.constEnd();
 
-	classnameLabel->setText(iter.key());
+	//fun maping time
 
-	QDir imageFilePath{ image_folder_path.absolutePath().append("/").append(iter.key().append(".png")) };
+	// we need to save time for pricing items by reducing redundant classnames
+	// we therefor map by modelname a list of classnames
+
+	for (iter; iter != endIt; iter++)
+	{
+		QString key = jsonObj[iter.key()].toObject()["model"].toString();
+		QHash<QString, QList<QString>>::const_iterator hashIt = hashmap.find(key);
+		if (hashIt == hashmap.end())
+		{
+			// create the QList if the key is new
+			QList<QString> classnames{ iter.key() };
+			hashmap[key] = classnames;
+		}
+		else
+		{
+			hashmap[key].push_back(iter.key());
+		}
+
+	}
+
+	hashIt = hashmap.begin();
+	hashEndIT = hashmap.end();
+	QString key = hashmap[hashIt.key()][0];
+
+	classnameLabel->setText(key);
+	proBar->setMaximum(hashmap.size());
+
+	QDir imageFilePath{ image_folder_path.absolutePath().append("/").append(key.append(".png")) };
 	//std::cout << imageFilePath.absolutePath().toStdString() <<"\n";
 	load_image(imageFilePath.absolutePath());
 

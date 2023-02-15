@@ -98,8 +98,19 @@ void MainWindow::save()
 	QHash<QString, QList<QString>>::const_iterator hashEndIT = hashmap.end();
 	for (hashIt ; hashIt != hashEndIT; hashIt++)
 	{
-		out << hashIt.key() << "\n";
-
+		out << hashIt.key() << ";" << "[";
+		QList<QString> classnames = hashIt.value();
+		for (size_t i = 0; i < classnames.length(); i++)
+		{
+			if (i == classnames.length() - 1)
+			{
+				out << classnames[i];
+			}
+			else {
+				out << classnames[i] << ",";
+			}
+		}
+		out << "]" << "\n";
 	}
 
 
