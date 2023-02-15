@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include <QDir>
+#include <QTextStream>
 
 MainWindow::MainWindow()
 {
@@ -20,7 +21,6 @@ MainWindow::MainWindow()
 	QWidget* bottomFiller = new QWidget;
 	bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	std::filesystem::path path("E:/qt/json/test.json");
 	list = new List(this);
 
 
@@ -60,19 +60,20 @@ void MainWindow::save()
 		qWarning("Couldn't open save file.");
 	}
 
-	QJsonObject::const_iterator iter = list->get_json_object().constBegin();
-	QJsonObject::const_iterator endIt = list->get_json_object().constEnd();
+	QJsonObject jsonObj = list->get_json_object();
 
-	QString line = QString{ "ClassName"}.append(",\n");
+	QJsonObject::const_iterator iter = jsonObj.constBegin();
+	QJsonObject::const_iterator endIt = jsonObj.constEnd();
+
+
+	QTextStream out(&file);
 	// create list objects
 	for (iter; iter != endIt; iter++)
 	{
-		//std::cout << iter.key().toStdString() << "\n";
-		
-		 line.append(QString{iter.key()}.append(",\n"));
+		out << iter.key() << "\n";
 		
 	}
-	file.write(line.toUtf8());
+	
 	file.close();
 }
 
